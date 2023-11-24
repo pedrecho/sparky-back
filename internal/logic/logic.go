@@ -11,6 +11,7 @@ import (
 	"os"
 	"slices"
 	"sparky-back/internal/models"
+	"time"
 )
 
 const staticPath = "static/"
@@ -120,6 +121,16 @@ func (l *Logic) SetReaction(ctx context.Context, reaction *models.Reaction) erro
 			_, err = l.db.NewInsert().Model(toChat).Exec(ctx)
 			if err != nil {
 				return fmt.Errorf("to chat: %w", err)
+			}
+			message := &models.Message{
+				UserID: nil,
+				ChatID: chat.ID,
+				Time:   time.Now(),
+				Text:   "",
+			}
+			_, err = l.db.NewInsert().Model(message).Exec(ctx)
+			if err != nil {
+				return fmt.Errorf("start message: %w", err)
 			}
 		}
 	} else {

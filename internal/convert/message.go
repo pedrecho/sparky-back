@@ -16,7 +16,7 @@ func FormToMessage(form url.Values) (*models.Message, error) {
 
 	userID := form.Get("user_id")
 	if userID != "" {
-		message.UserID, err = strconv.ParseInt(userID, 10, 64)
+		*message.UserID, err = strconv.ParseInt(userID, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("parse user_id field: %w", err)
 		}

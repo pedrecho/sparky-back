@@ -44,8 +44,9 @@ type UserChat struct {
 
 type Message struct {
 	bun.BaseModel `bun:"table:messages,alias:m"`
-	UserID        int64     `bun:",pk" json:"user_id" json:"user_id"`
-	ChatID        int64     `bun:",pk" json:"chat_id" json:"chat_id"`
+	MessageID     int64     `bun:"id,pk,autoincrement" json:"id"`
+	UserID        *int64    `json:"user_id"`
+	ChatID        int64     `json:"chat_id"`
 	Chat          *Chat     `bun:"rel:belongs-to,join:chat_id=id"`
 	Time          time.Time `bun:"time" json:"time"`
 	Text          string    `bun:"text" json:"text"`

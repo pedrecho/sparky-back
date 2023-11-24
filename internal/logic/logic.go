@@ -25,17 +25,17 @@ func NewLogic(db *bun.DB) *Logic {
 	}
 }
 
-func (l *Logic) SaveUser(ctx context.Context, user *models.User) error {
+func (l *Logic) SaveUser(ctx context.Context, user *models.User) (int64, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return fmt.Errorf("hashing password: %w", err)
+		return 0, fmt.Errorf("hashing password: %w", err)
 	}
 	user.Password = string(hashedPassword)
 	_, err = l.db.NewInsert().Model(user).Exec(ctx)
 	if err != nil {
-		return fmt.Errorf("insert query: %w", err)
+		return 0, fmt.Errorf("insert query: %w", err)
 	}
-	return nil
+	return user.ID, nil
 }
 
 func (l *Logic) SaveImg(file multipart.File, filename string) (string, error) {
@@ -100,7 +100,27 @@ func (l *Logic) SetReaction(ctx context.Context, reaction *models.Reaction) erro
 		return reaction.UserID == r.ToID
 	}); i != -1 {
 		if user.Reactions[i].Like {
-			fmt.Println("TIME TO CHAT")
+			chat := &models.Chat{}
+			_, err = l.db.NewInsert().Model(chat).Exec(ctx)
+			if err != nil {
+				return fmt.Errorf("new chat: %w", err)
+			}
+			userChat := &models.UserChat{
+				UserID: reaction.UserID,
+				ChatID: chat.ID,
+			}
+			_, err = l.db.NewInsert().Model(userChat).Exec(ctx)
+			if err != nil {
+				return fmt.Errorf("user chat: %w", err)
+			}
+			toChat := &models.UserChat{
+				UserID: reaction.ToID,
+				ChatID: chat.ID,
+			}
+			_, err = l.db.NewInsert().Model(toChat).Exec(ctx)
+			if err != nil {
+				return fmt.Errorf("to chat: %w", err)
+			}
 		}
 	} else {
 		if !reaction.Like {

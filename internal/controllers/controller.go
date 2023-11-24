@@ -41,11 +41,11 @@ func (c *Controller) AddUser(w http.ResponseWriter, req bunrouter.Request) error
 		return fmt.Errorf("saving image: %w", err)
 	}
 	user.ImgPath = imagePath
-	err = c.logic.SaveUser(context.TODO(), user)
+	id, err := c.logic.SaveUser(context.TODO(), user)
 	if err != nil {
 		return fmt.Errorf("saving user: %w", err)
 	}
-	w.Write([]byte("user added"))
+	w.Write([]byte(fmt.Sprintf("%d", id)))
 	return nil
 }
 

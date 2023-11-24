@@ -20,7 +20,7 @@ func FormToReaction(form url.Values) (*models.Reaction, error) {
 	}
 
 	toID := form.Get("to_id")
-	if userID != "" {
+	if toID != "" {
 		reaction.ToID, err = strconv.ParseInt(toID, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("parse to_id field: %w", err)

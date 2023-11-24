@@ -22,15 +22,7 @@ func main() {
 	}
 	db := loader.New(cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.DBName)
 	_, err = db.NewCreateTable().
-		Model(&models.UserChat{}).
-		IfNotExists().
-		Exec(context.Background())
-	_, err = db.NewCreateTable().
 		Model(&models.Message{}).
-		IfNotExists().
-		Exec(context.Background())
-	_, err = db.NewCreateTable().
-		Model(&models.Chat{}).
 		IfNotExists().
 		Exec(context.Background())
 	_, err = db.NewCreateTable().

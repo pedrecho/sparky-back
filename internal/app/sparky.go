@@ -34,10 +34,8 @@ func Run(configPath string) error {
 	router.GET("/user/:id", c.GetUserByID)
 	router.GET("/static/:filename", c.GetFile)
 	router.POST("/reaction", c.SetReaction)
-	//router.WithGroup("/reaction", func(subrouter *bunrouter.Group) {
-	//	subrouter = subrouter.Use(middleware1).Use(middleware2)
-	//	subrouter.GET("/", handler)
-	//})
+	router.POST("/connection", c.ClientConnection)
+	router.POST("/message", c.NewMessage)
 	handler := http.HandlerFunc(router.ServeHTTP)
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),

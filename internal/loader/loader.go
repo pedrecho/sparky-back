@@ -15,6 +15,6 @@ func New(host string, port int, user, password, dbName string) *bun.DB {
 	dsn := fmt.Sprintf(DsnTemplate, user, password, host, port, dbName)
 	pgdb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 	db := bun.NewDB(pgdb, pgdialect.New())
-	db.RegisterModel((*models.UserChat)(nil), (*models.Message)(nil), (*models.Chat)(nil), (*models.Reaction)(nil), (*models.User)(nil))
+	db.RegisterModel((*models.Message)(nil), (*models.Reaction)(nil), (*models.User)(nil))
 	return db
 }

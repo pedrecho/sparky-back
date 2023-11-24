@@ -16,17 +16,17 @@ func FormToMessage(form url.Values) (*models.Message, error) {
 
 	userID := form.Get("user_id")
 	if userID != "" {
-		*message.UserID, err = strconv.ParseInt(userID, 10, 64)
+		message.UserID, err = strconv.ParseInt(userID, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("parse user_id field: %w", err)
 		}
 	}
 
-	chatID := form.Get("chat_id")
-	if userID != "" {
-		message.ChatID, err = strconv.ParseInt(chatID, 10, 64)
+	toID := form.Get("to_id")
+	if toID != "" {
+		message.ToID, err = strconv.ParseInt(toID, 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf("parse chat_id field: %w", err)
+			return nil, fmt.Errorf("parse to_id field: %w", err)
 		}
 	}
 
@@ -36,6 +36,9 @@ func FormToMessage(form url.Values) (*models.Message, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parse time field: %w", err)
 		}
+	} else {
+		//TODO
+		message.Time = time.Now()
 	}
 
 	message.Text = form.Get("text")

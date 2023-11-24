@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
@@ -14,16 +15,26 @@ import (
 	"time"
 )
 
-const staticPath = "static/"
+const (
+	staticPath            = "static/"
+	dbBufSize             = 1000
+	clientBufSize         = 100
+	defaultContextTimeout = 2 * time.Second
+)
 
 type Logic struct {
-	db *bun.DB
+	db       *bun.DB
+	dbCh     chan models.Message
+	clientCh map[int64]chan models.Message
 }
 
 func NewLogic(db *bun.DB) *Logic {
-	return &Logic{
-		db: db,
+	logic := &Logic{
+		db:       db,
+		clientCh: make(map[int64]chan models.Message),
+		dbCh:     make(chan models.Message, dbBufSize),
 	}
+	return logic
 }
 
 func (l *Logic) SaveUser(ctx context.Context, user *models.User) (int64, error) {
@@ -101,30 +112,9 @@ func (l *Logic) SetReaction(ctx context.Context, reaction *models.Reaction) erro
 		return reaction.UserID == r.ToID
 	}); i != -1 {
 		if user.Reactions[i].Like {
-			chat := &models.Chat{}
-			_, err = l.db.NewInsert().Model(chat).Exec(ctx)
-			if err != nil {
-				return fmt.Errorf("new chat: %w", err)
-			}
-			userChat := &models.UserChat{
-				UserID: reaction.UserID,
-				ChatID: chat.ID,
-			}
-			_, err = l.db.NewInsert().Model(userChat).Exec(ctx)
-			if err != nil {
-				return fmt.Errorf("user chat: %w", err)
-			}
-			toChat := &models.UserChat{
-				UserID: reaction.ToID,
-				ChatID: chat.ID,
-			}
-			_, err = l.db.NewInsert().Model(toChat).Exec(ctx)
-			if err != nil {
-				return fmt.Errorf("to chat: %w", err)
-			}
 			message := &models.Message{
-				UserID: nil,
-				ChatID: chat.ID,
+				UserID: reaction.UserID,
+				ToID:   reaction.ToID,
 				Time:   time.Now(),
 				Text:   "",
 			}
@@ -146,4 +136,70 @@ func (l *Logic) SetReaction(ctx context.Context, reaction *models.Reaction) erro
 		}
 	}
 	return nil
+}
+
+func (l *Logic) NewMessage(message *models.Message) error {
+	message, err := l.SaveMessage(context.TODO(), message)
+	if err != nil {
+		return fmt.Errorf("save message: %v", err)
+	}
+	if user, ok := l.clientCh[message.UserID]; ok {
+		user <- *message
+	}
+	if to, ok := l.clientCh[message.ToID]; ok {
+		to <- *message
+	}
+	return nil
+}
+
+func (l *Logic) SaveMessage(ctx context.Context, message *models.Message) (*models.Message, error) {
+	_, err := l.db.NewInsert().Model(message).Exec(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("insert query: %v", err)
+	}
+	return message, nil
+}
+
+func (l *Logic) GetNewMessages(ctx context.Context, msg *models.Message) ([]models.Message, error) {
+	messages := make([]models.Message, 0)
+	err := l.db.NewSelect().
+		Model(&messages).
+		Where("user_id = ? OR to_id = ?", msg.UserID, msg.UserID).
+		Where("time > ?", msg.Time).
+		Order("time ASC").
+		Scan(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("select query: %w", err)
+	}
+	return messages, nil
+}
+
+func (l *Logic) SendMessages(ctx context.Context, send func([]byte), msg *models.Message) error {
+	l.clientCh[msg.UserID] = make(chan models.Message, clientBufSize)
+	messages, err := l.GetNewMessages(context.TODO(), msg)
+	if err != nil {
+		return fmt.Errorf("getting new messages: %w", err)
+	}
+
+	for i := range messages {
+		jsonData, err := json.Marshal(messages[i])
+		if err != nil {
+			return fmt.Errorf("marshaling json: %w", err)
+		}
+		send(jsonData)
+	}
+
+	for {
+		select {
+		case message := <-l.clientCh[msg.UserID]:
+			jsonData, err := json.Marshal(message)
+			if err != nil {
+				return fmt.Errorf("marshaling json: %w", err)
+			}
+			send(jsonData)
+		case <-ctx.Done():
+			delete(l.clientCh, msg.UserID)
+			return nil
+		}
+	}
 }

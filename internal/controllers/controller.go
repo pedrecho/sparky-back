@@ -102,9 +102,6 @@ func (c *Controller) SetReaction(w http.ResponseWriter, req bunrouter.Request) e
 	if err != nil {
 		return fmt.Errorf("big multipartform size: %w", err)
 	}
-	if err != nil {
-		return fmt.Errorf("big multipartform size: %w", err)
-	}
 	reaction, err := convert.FormToReaction(req.PostForm)
 	if err != nil {
 		return fmt.Errorf("parsing post form: %w", err)
@@ -114,4 +111,48 @@ func (c *Controller) SetReaction(w http.ResponseWriter, req bunrouter.Request) e
 		return fmt.Errorf("login: %w", err)
 	}
 	return nil
+}
+
+func (c *Controller) ClientConnection(w http.ResponseWriter, req bunrouter.Request) error {
+	err := req.ParseMultipartForm(1 << 22)
+	if err != nil {
+		return fmt.Errorf("big multipartform size: %w", err)
+	}
+	msg, err := convert.FormToMessage(req.PostForm)
+	if err != nil {
+		return fmt.Errorf("parsing post form: %w", err)
+	}
+
+	//TODO it's sse((
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		return fmt.Errorf("streaming unsupported: %w", err)
+	}
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	sse := func(data []byte) {
+		fmt.Fprintf(w, "data: %s\n\n", string(data))
+		flusher.Flush()
+	}
+	err = c.logic.SendMessages(req.Context(), sse, msg)
+	if err != nil {
+		return fmt.Errorf("sending messages: %w", err)
+	}
+
+	<-req.Context().Done()
+	return nil
+}
+
+func (c *Controller) NewMessage(w http.ResponseWriter, req bunrouter.Request) error {
+	err := req.ParseMultipartForm(1 << 22)
+	if err != nil {
+		return fmt.Errorf("big multipartform size: %w", err)
+	}
+	msg, err := convert.FormToMessage(req.PostForm)
+	if err != nil {
+		return fmt.Errorf("parsing post form: %w", err)
+	}
+	return c.logic.NewMessage(msg)
 }

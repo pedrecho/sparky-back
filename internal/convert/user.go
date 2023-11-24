@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const birthdayLayout = "2006-01-02"
+
 func FormToUser(form url.Values) (*models.User, error) {
 	user := new(models.User)
 	var err error
@@ -18,7 +20,7 @@ func FormToUser(form url.Values) (*models.User, error) {
 
 	birthday := form.Get("birthday")
 	if birthday != "" {
-		user.Birthday, err = time.Parse("2006-01-02", birthday)
+		user.Birthday, err = time.Parse(birthdayLayout, birthday)
 		if err != nil {
 			return nil, fmt.Errorf("parse birthday field: %w", err)
 		}

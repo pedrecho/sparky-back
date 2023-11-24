@@ -10,7 +10,7 @@ import (
 func FormToReaction(form url.Values) (*models.Reaction, error) {
 	reaction := new(models.Reaction)
 	var err error
-	//TODO id
+
 	userID := form.Get("user_id")
 	if userID != "" {
 		reaction.UserID, err = strconv.ParseInt(userID, 10, 64)

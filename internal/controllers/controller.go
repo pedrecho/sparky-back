@@ -108,7 +108,7 @@ func (c *Controller) SetReaction(w http.ResponseWriter, req bunrouter.Request) e
 	}
 	err = c.logic.SetReaction(context.TODO(), reaction)
 	if err != nil {
-		return fmt.Errorf("login: %w", err)
+		return fmt.Errorf("setting reaction: %w", err)
 	}
 	return nil
 }

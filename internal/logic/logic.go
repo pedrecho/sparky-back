@@ -118,10 +118,7 @@ func (l *Logic) SetReaction(ctx context.Context, reaction *models.Reaction) erro
 				Time:   time.Now(),
 				Text:   "",
 			}
-			_, err = l.db.NewInsert().Model(message).Exec(ctx)
-			if err != nil {
-				return fmt.Errorf("start message: %w", err)
-			}
+			return l.NewMessage(message)
 		}
 	} else {
 		if !reaction.Like {
@@ -139,7 +136,7 @@ func (l *Logic) SetReaction(ctx context.Context, reaction *models.Reaction) erro
 }
 
 func (l *Logic) NewMessage(message *models.Message) error {
-	message, err := l.SaveMessage(context.TODO(), message)
+	err := l.SaveMessage(context.TODO(), message)
 	if err != nil {
 		return fmt.Errorf("save message: %v", err)
 	}
@@ -152,12 +149,12 @@ func (l *Logic) NewMessage(message *models.Message) error {
 	return nil
 }
 
-func (l *Logic) SaveMessage(ctx context.Context, message *models.Message) (*models.Message, error) {
+func (l *Logic) SaveMessage(ctx context.Context, message *models.Message) error {
 	_, err := l.db.NewInsert().Model(message).Exec(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("insert query: %v", err)
+		return fmt.Errorf("insert query: %v", err)
 	}
-	return message, nil
+	return nil
 }
 
 func (l *Logic) GetNewMessages(ctx context.Context, msg *models.Message) ([]models.Message, error) {

@@ -9,6 +9,7 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"slices"
 	"sparky-back/internal/models"
 )
 
@@ -88,7 +89,30 @@ func (l *Logic) LogIn(ctx context.Context, email, password string) (int64, error
 func (l *Logic) SetReaction(ctx context.Context, reaction *models.Reaction) error {
 	_, err := l.db.NewInsert().Model(reaction).Exec(ctx)
 	if err != nil {
-		return fmt.Errorf("insert query: %w", err)
+		return fmt.Errorf("insert reaction: %w", err)
+	}
+	user := new(models.User)
+	err = l.db.NewSelect().Model(user).Relation("Reactions").Where("id = ?", reaction.ToID).Scan(ctx)
+	if err != nil {
+		return fmt.Errorf("select to user: %w", err)
+	}
+	if i := slices.IndexFunc(user.Reactions, func(r models.Reaction) bool {
+		return reaction.UserID == r.ToID
+	}); i != -1 {
+		if user.Reactions[i].Like {
+			fmt.Println("TIME TO CHAT")
+		}
+	} else {
+		if !reaction.Like {
+			_, err = l.db.NewInsert().Model(&models.Reaction{
+				UserID: user.ID,
+				ToID:   reaction.UserID,
+				Like:   false,
+			}).Exec(ctx)
+			if err != nil {
+				return fmt.Errorf("insert false reaction: %w", err)
+			}
+		}
 	}
 	return nil
 }

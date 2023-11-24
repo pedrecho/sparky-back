@@ -1,16 +1,13 @@
 package controllers
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/uptrace/bunrouter"
 	"net/http"
 	"sparky-back/internal/convert"
-	"sparky-back/internal/dto"
 	"sparky-back/internal/logic"
-	"sparky-back/internal/models"
 	"strconv"
 )
 
@@ -105,29 +102,14 @@ func (c *Controller) SetReaction(w http.ResponseWriter, req bunrouter.Request) e
 	if err != nil {
 		return fmt.Errorf("big multipartform size: %w", err)
 	}
-	jsonData := make(map[string]interface{})
-	for key, values := range req.PostForm {
-		if len(values) > 1 {
-			jsonData[key] = values
-		} else {
-			jsonData[key] = values[0]
-		}
-	}
-	jsonOutput, _ := json.Marshal(jsonData)
-	reaction := new(dto.Reaction)
-	err = json.NewDecoder(bytes.NewReader(jsonOutput)).Decode(reaction)
 	if err != nil {
-		return fmt.Errorf("decoding json: %w", err)
+		return fmt.Errorf("big multipartform size: %w", err)
 	}
-	likeBool, err := strconv.ParseBool(reaction.Like)
+	reaction, err := convert.FormToReaction(req.PostForm)
 	if err != nil {
-		return fmt.Errorf("like value %s: %w", reaction.Like, err)
+		return fmt.Errorf("parsing post form: %w", err)
 	}
-	err = c.logic.SetReaction(context.TODO(), &models.Reaction{
-		UserID: reaction.UserID,
-		ToID:   reaction.ToID,
-		Like:   likeBool,
-	})
+	err = c.logic.SetReaction(context.TODO(), reaction)
 	if err != nil {
 		return fmt.Errorf("login: %w", err)
 	}

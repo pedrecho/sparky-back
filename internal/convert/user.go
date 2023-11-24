@@ -15,15 +15,37 @@ func FormToUser(form url.Values) (*models.User, error) {
 	user.Email = form.Get("email")
 	user.Password = form.Get("password")
 	user.Name = form.Get("name")
+
 	birthday := form.Get("birthday")
-	user.Birthday, err = time.Parse("2006-01-02", birthday)
-	if err != nil {
-		return nil, fmt.Errorf("parse birthday field: %w", err)
+	if birthday != "" {
+		user.Birthday, err = time.Parse("2006-01-02", birthday)
+		if err != nil {
+			return nil, fmt.Errorf("parse birthday field: %w", err)
+		}
 	}
+
 	sex := form.Get("sex")
-	user.Sex, err = strconv.ParseBool(sex)
-	if err != nil {
-		return nil, fmt.Errorf("parse sex field: %w", err)
+	if sex != "" {
+		user.Sex, err = strconv.ParseBool(sex)
+		if err != nil {
+			return nil, fmt.Errorf("parse sex field: %w", err)
+		}
+	}
+
+	latitude := form.Get("latitude")
+	if latitude != "" {
+		user.Latitude, err = strconv.ParseFloat(latitude, 64)
+		if err != nil {
+			return nil, fmt.Errorf("parse latitude field: %w", err)
+		}
+	}
+
+	longitude := form.Get("longitude")
+	if longitude != "" {
+		user.Longitude, err = strconv.ParseFloat(longitude, 64)
+		if err != nil {
+			return nil, fmt.Errorf("parse longitude field: %w", err)
+		}
 	}
 
 	return user, nil

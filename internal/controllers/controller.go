@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/uptrace/bunrouter"
 	"net/http"
+	"sparky-back/internal/convert"
 	"sparky-back/internal/dto"
 	"sparky-back/internal/logic"
 	"sparky-back/internal/models"
@@ -28,22 +29,9 @@ func (c *Controller) AddUser(w http.ResponseWriter, req bunrouter.Request) error
 	if err != nil {
 		return fmt.Errorf("big multipartform size: %w", err)
 	}
-	jsonData := make(map[string]interface{})
-	for key, values := range req.PostForm {
-		if len(values) > 1 {
-			jsonData[key] = values
-		} else {
-			jsonData[key] = values[0]
-		}
-	}
-	jsonOutput, _ := json.Marshal(jsonData)
-	var user models.User
-	err = json.NewDecoder(bytes.NewReader(jsonOutput)).Decode(&user)
+	user, err := convert.FormToUser(req.PostForm)
 	if err != nil {
-		return fmt.Errorf("decoding json: %w", err)
-	}
-	if err != nil {
-		return fmt.Errorf("parse multipart form: %w", err)
+		return fmt.Errorf("parsing post form: %w", err)
 	}
 	file, handler, err := req.FormFile("img")
 	if err != nil {
@@ -56,7 +44,7 @@ func (c *Controller) AddUser(w http.ResponseWriter, req bunrouter.Request) error
 		return fmt.Errorf("saving image: %w", err)
 	}
 	user.ImgPath = imagePath
-	err = c.logic.SaveUser(context.TODO(), &user)
+	err = c.logic.SaveUser(context.TODO(), user)
 	if err != nil {
 		return fmt.Errorf("saving user: %w", err)
 	}
@@ -69,19 +57,9 @@ func (c *Controller) Login(w http.ResponseWriter, req bunrouter.Request) error {
 	if err != nil {
 		return fmt.Errorf("big multipartform size: %w", err)
 	}
-	jsonData := make(map[string]interface{})
-	for key, values := range req.PostForm {
-		if len(values) > 1 {
-			jsonData[key] = values
-		} else {
-			jsonData[key] = values[0]
-		}
-	}
-	jsonOutput, _ := json.Marshal(jsonData)
-	var user models.User
-	err = json.NewDecoder(bytes.NewReader(jsonOutput)).Decode(&user)
+	user, err := convert.FormToUser(req.PostForm)
 	if err != nil {
-		return fmt.Errorf("decoding json: %w", err)
+		return fmt.Errorf("parsing post form: %w", err)
 	}
 	id, err := c.logic.LogIn(context.TODO(), user.Email, user.Password)
 	if err != nil {

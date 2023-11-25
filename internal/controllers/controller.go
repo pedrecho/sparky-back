@@ -48,7 +48,38 @@ func (c *Controller) AddUser(w http.ResponseWriter, req bunrouter.Request) error
 	user.ImgPath = imagePath
 	id, err := c.logic.AddUser(context.TODO(), user)
 	if err != nil {
-		return fmt.Errorf("saving user: %w", err)
+		return fmt.Errorf("adding user: %w", err)
+	}
+	w.Write([]byte(fmt.Sprintf("%d", id)))
+	return nil
+}
+
+func (c *Controller) UpdateUser(w http.ResponseWriter, req bunrouter.Request) error {
+	err := req.ParseMultipartForm(1 << 22)
+	if err != nil {
+		return fmt.Errorf("big multipartform size: %w", err)
+	}
+	user, err := convert.FormToUser(req.PostForm)
+	if err != nil {
+		return fmt.Errorf("parsing post form: %w", err)
+	}
+	file, handler, err := req.FormFile("img")
+	if err != nil {
+		if !errors.Is(err, http.ErrMissingFile) {
+			return fmt.Errorf("getting form file img: %w", err)
+		}
+	} else {
+		defer file.Close()
+		imageName := handler.Filename
+		imagePath, err := c.logic.SaveImg(file, imageName)
+		if err != nil {
+			return fmt.Errorf("saving image: %w", err)
+		}
+		user.ImgPath = imagePath
+	}
+	id, err := c.logic.UpdateUser(context.TODO(), user)
+	if err != nil {
+		return fmt.Errorf("updating user: %w", err)
 	}
 	w.Write([]byte(fmt.Sprintf("%d", id)))
 	return nil

@@ -50,12 +50,37 @@ func (l *Logic) AddUser(ctx context.Context, user *models.User) (int64, error) {
 	return user.ID, nil
 }
 
-//func (l *Logic) UpdateUser(ctx context.Context, user *models.User) (int64, error) {
-//	_, err := db.NewUpdate().Model(user).Set("name = ?name, email = ?email").Exec(ctx)
-//	if err != nil {
-//		// Обработка ошибки
-//	}
-//}
+func (l *Logic) UpdateUser(ctx context.Context, user *models.User) (int64, error) {
+	oldUser := new(models.User)
+	err := l.db.NewSelect().Model(oldUser).Where("id = ?", user.ID).Scan(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("select query: %w", err)
+	}
+	if user.ImgPath == "" {
+		user.ImgPath = oldUser.ImgPath
+	} else {
+		l.DeleteImg(oldUser.ImgPath)
+	}
+	if user.Description == "" {
+		user.Description = oldUser.Description
+	}
+	if user.Latitude == 0 {
+		user.Latitude = oldUser.Latitude
+	}
+	if user.Longitude == 0 {
+		user.Longitude = oldUser.Longitude
+	}
+	_, err = l.db.NewUpdate().
+		Model(user).
+		Set("description = ?, img_path = ?, latitude = ?, longitude = ?",
+			user.Description, user.ImgPath, user.Latitude, user.Longitude).
+		Where("id = ?", user.ID).
+		Exec(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("update query: %w", err)
+	}
+	return user.ID, nil
+}
 
 func (l *Logic) SaveImg(file multipart.File, filename string) (string, error) {
 	filePath := staticPath + uuid.New().String() + filename
@@ -236,4 +261,8 @@ func (l *Logic) GetRecommendations(ctx context.Context, filter *models.Filter) (
 		return nil, fmt.Errorf("users select query: %w", err)
 	}
 	return users, nil
+}
+
+func (l *Logic) DeleteImg(imagePath string) error {
+	return os.Remove(imagePath)
 }

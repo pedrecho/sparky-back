@@ -25,6 +25,7 @@ func FormToUser(form url.Values) (*models.User, error) {
 	user.Email = form.Get("email")
 	user.Password = form.Get("password")
 	user.Name = form.Get("name")
+	user.Description = form.Get("description")
 
 	birthday := form.Get("birthday")
 	if birthday != "" {

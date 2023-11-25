@@ -11,6 +11,7 @@ type User struct {
 	Email         string     `bun:"email,unique" json:"email"`
 	Password      string     `bun:"password" json:"password"`
 	Name          string     `bun:"name" json:"name"`
+	Description   string     `bun:"description" json:"description"`
 	Birthday      time.Time  `bun:"birthday" json:"birthday"`
 	Sex           bool       `bun:"sex" json:"sex"`
 	Latitude      float64    `bun:"latitude" json:"latitude"`

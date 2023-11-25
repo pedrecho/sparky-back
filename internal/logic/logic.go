@@ -228,6 +228,7 @@ func (l *Logic) GetRecommendations(ctx context.Context, filter *models.Filter) (
 		Model(&users).
 		Where("id NOT IN (?)", bun.In(reactedUserIDs)).
 		Where("sex = ?", filter.Sex).
+		Where("EXTRACT(YEAR FROM AGE(CURRENT_TIMESTAMP, birthday)) BETWEEN ? AND ?", filter.MinAge, filter.MaxAge).
 		Where("calculate_distance(latitude, longitude, ?, ?, 'K') < ?", user.Latitude, user.Longitude, filter.Distance).
 		Limit(filter.Limit).
 		Scan(ctx)

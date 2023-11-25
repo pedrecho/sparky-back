@@ -240,6 +240,109 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "localhost:8080/recommendations",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "user_id",
+							"value": "3",
+							"type": "text"
+						},
+						{
+							"key": "sex",
+							"value": "true",
+							"type": "text"
+						},
+						{
+							"key": "limit",
+							"value": "0",
+							"type": "text"
+						},
+						{
+							"key": "distance",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "min_age",
+							"value": "20",
+							"type": "text"
+						},
+						{
+							"key": "max_age",
+							"value": "3000",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/recommendations",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"recommendations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/update",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "id",
+							"value": "5",
+							"type": "text"
+						},
+						{
+							"key": "description",
+							"value": "346123612662",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "longitude",
+							"value": "25",
+							"type": "text"
+						},
+						{
+							"key": "latitude",
+							"value": "413251",
+							"type": "text"
+						},
+						{
+							"key": "img",
+							"type": "file",
+							"src": "/C:/Users/chern/Downloads/Grosser_Panda.JPG",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/update",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"update"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

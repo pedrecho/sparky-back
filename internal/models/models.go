@@ -17,7 +17,6 @@ type User struct {
 	Longitude     float64    `bun:"longitude" json:"longitude"`
 	ImgPath       string     `bun:"img_path" json:"img_path"`
 	Reactions     []Reaction `bun:"rel:has-many,join:id=user_id"`
-	//Chats         []Chat     `bun:"m2m:user_chats,join:User=Chat"`
 }
 
 type Reaction struct {
@@ -35,4 +34,13 @@ type Message struct {
 	ToID          int64     `json:"to_id"`
 	Time          time.Time `bun:"time" json:"time"`
 	Text          string    `bun:"text" json:"text"`
+}
+
+type Filter struct {
+	UserID   int64   `json:"user_id"`
+	MinAge   int     `json:"min_age"`
+	MaxAge   int     `json:"max_age"`
+	Sex      bool    `json:"sex"`
+	Distance float64 `json:"distance"`
+	Limit    int     `json:"limit"`
 }

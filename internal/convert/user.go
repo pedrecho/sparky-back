@@ -13,7 +13,15 @@ const birthdayLayout = "2006-01-02"
 func FormToUser(form url.Values) (*models.User, error) {
 	user := new(models.User)
 	var err error
-	//TODO id
+
+	id := form.Get("id")
+	if id != "" {
+		user.ID, err = strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("parse id field: %w", err)
+		}
+	}
+
 	user.Email = form.Get("email")
 	user.Password = form.Get("password")
 	user.Name = form.Get("name")

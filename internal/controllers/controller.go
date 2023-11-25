@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/uptrace/bunrouter"
 	"net/http"
@@ -32,7 +33,11 @@ func (c *Controller) AddUser(w http.ResponseWriter, req bunrouter.Request) error
 	}
 	file, handler, err := req.FormFile("img")
 	if err != nil {
-		return fmt.Errorf("gettin form file img: %w", err)
+		if errors.Is(err, http.ErrMissingFile) {
+			return fmt.Errorf("file img does not exist in the form: %w", err)
+		} else {
+			return fmt.Errorf("getting form file img: %w", err)
+		}
 	}
 	defer file.Close()
 	imageName := handler.Filename
@@ -41,7 +46,7 @@ func (c *Controller) AddUser(w http.ResponseWriter, req bunrouter.Request) error
 		return fmt.Errorf("saving image: %w", err)
 	}
 	user.ImgPath = imagePath
-	id, err := c.logic.SaveUser(context.TODO(), user)
+	id, err := c.logic.AddUser(context.TODO(), user)
 	if err != nil {
 		return fmt.Errorf("saving user: %w", err)
 	}
@@ -155,4 +160,25 @@ func (c *Controller) NewMessage(w http.ResponseWriter, req bunrouter.Request) er
 		return fmt.Errorf("parsing post form: %w", err)
 	}
 	return c.logic.NewMessage(msg)
+}
+
+func (c *Controller) GetRecommendations(w http.ResponseWriter, req bunrouter.Request) error {
+	err := req.ParseMultipartForm(1 << 22)
+	if err != nil {
+		return fmt.Errorf("big multipartform size: %w", err)
+	}
+	filter, err := convert.FormToFilter(req.PostForm)
+	if err != nil {
+		return fmt.Errorf("parsing post form: %w", err)
+	}
+	users, err := c.logic.GetRecommendations(context.TODO(), filter)
+	if err != nil {
+		return fmt.Errorf("getting recomendations: %w", err)
+	}
+	jsonData, err := json.Marshal(users)
+	if err != nil {
+		return fmt.Errorf("marshaling json: %w", err)
+	}
+	w.Write(jsonData)
+	return nil
 }

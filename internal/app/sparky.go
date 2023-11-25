@@ -36,6 +36,7 @@ func Run(configPath string) error {
 	router.POST("/reaction", c.SetReaction)
 	router.POST("/connection", c.ClientConnection)
 	router.POST("/message", c.NewMessage)
+	router.POST("/recommendations", c.GetRecommendations)
 	handler := http.HandlerFunc(router.ServeHTTP)
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),

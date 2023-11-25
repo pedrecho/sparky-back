@@ -1,0 +1,245 @@
+{
+	"info": {
+		"_postman_id": "d1340769-77ac-4098-8fdb-2510ac35b165",
+		"name": "Sparky",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7673233"
+	},
+	"item": [
+		{
+			"name": "localhost:8080/signup",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "gggg",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "1234",
+							"type": "text"
+						},
+						{
+							"key": "img",
+							"type": "file",
+							"src": "/C:/Users/chern/Downloads/photo_2023-11-23_12-53-46.jpg"
+						},
+						{
+							"key": "email",
+							"value": "gggg",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/signup",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/signin",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "email",
+							"value": "gggg",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "1234",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/signin",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"signin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/user/7",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/user/7",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"user",
+						"7"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/static/d3569d8d-25ec-4f7b-9324-7bd2ee161dd3photo_2023-11-23_12-53-46.jpg",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/static/d3569d8d-25ec-4f7b-9324-7bd2ee161dd3photo_2023-11-23_12-53-46.jpg",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"static",
+						"d3569d8d-25ec-4f7b-9324-7bd2ee161dd3photo_2023-11-23_12-53-46.jpg"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/reaction",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "user_id",
+							"value": "4",
+							"type": "text"
+						},
+						{
+							"key": "to_id",
+							"value": "3",
+							"type": "text"
+						},
+						{
+							"key": "like",
+							"value": "true",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/reaction",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"reaction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/connection",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "user_id",
+							"value": "2",
+							"type": "text"
+						},
+						{
+							"key": "time",
+							"value": "2000-01-03 14:13:21",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/connection",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"connection"
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "2",
+							"disabled": true
+						},
+						{
+							"key": "time",
+							"value": "2000-01-03 14:13:21",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8080/message",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "user_id",
+							"value": "2",
+							"type": "text"
+						},
+						{
+							"key": "to_id",
+							"value": "3",
+							"type": "text"
+						},
+						{
+							"key": "text",
+							"value": "rehwefb",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/message",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"message"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

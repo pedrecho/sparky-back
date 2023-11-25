@@ -37,7 +37,7 @@ func NewLogic(db *bun.DB) *Logic {
 	return logic
 }
 
-func (l *Logic) SaveUser(ctx context.Context, user *models.User) (int64, error) {
+func (l *Logic) AddUser(ctx context.Context, user *models.User) (int64, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, fmt.Errorf("hashing password: %w", err)
@@ -49,6 +49,13 @@ func (l *Logic) SaveUser(ctx context.Context, user *models.User) (int64, error) 
 	}
 	return user.ID, nil
 }
+
+//func (l *Logic) UpdateUser(ctx context.Context, user *models.User) (int64, error) {
+//	_, err := db.NewUpdate().Model(user).Set("name = ?name, email = ?email").Exec(ctx)
+//	if err != nil {
+//		// Обработка ошибки
+//	}
+//}
 
 func (l *Logic) SaveImg(file multipart.File, filename string) (string, error) {
 	filePath := staticPath + uuid.New().String() + filename
@@ -199,4 +206,33 @@ func (l *Logic) SendMessages(ctx context.Context, send func([]byte), msg *models
 			return nil
 		}
 	}
+}
+
+func (l *Logic) GetRecommendations(ctx context.Context, filter *models.Filter) ([]models.User, error) {
+	user := new(models.User)
+	err := l.db.NewSelect().
+		Model(user).
+		Relation("Reactions").
+		Where("id = ?", filter.UserID).
+		Scan(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("user select query: %w", err)
+	}
+	//это костыль
+	reactedUserIDs := make([]int64, 1, len(user.Reactions)+1)
+	for i := range user.Reactions {
+		reactedUserIDs = append(reactedUserIDs, user.Reactions[i].ToID)
+	}
+	users := make([]models.User, 0)
+	err = l.db.NewSelect().
+		Model(&users).
+		Where("id NOT IN (?)", bun.In(reactedUserIDs)).
+		Where("sex = ?", filter.Sex).
+		Where("calculate_distance(latitude, longitude, ?, ?, 'K') < ?", user.Latitude, user.Longitude, filter.Distance).
+		Limit(filter.Limit).
+		Scan(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("users select query: %w", err)
+	}
+	return users, nil
 }

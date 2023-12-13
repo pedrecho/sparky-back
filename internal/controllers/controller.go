@@ -103,12 +103,8 @@ func (c *Controller) Login(w http.ResponseWriter, req bunrouter.Request) error {
 }
 
 func (c *Controller) GetUser(w http.ResponseWriter, req bunrouter.Request) error {
-	idStr, okId := req.Params().Get("id")
-	emailStr, okEmail := req.Params().Get("email")
-	if !okId && !okEmail {
-		return fmt.Errorf("no id or email param")
-	}
-	if okId {
+	idStr := req.URL.Query().Get("id")
+	if idStr != "" {
 		id, err := strconv.ParseInt(idStr, 10, 64)
 		user, err := c.logic.GetUserByID(context.TODO(), id)
 		if err != nil {
@@ -121,15 +117,20 @@ func (c *Controller) GetUser(w http.ResponseWriter, req bunrouter.Request) error
 		w.Write(jsonData)
 		return nil
 	}
-	user, err := c.logic.GetUserByEmail(context.TODO(), emailStr)
-	if err != nil {
-		return fmt.Errorf("getting user: %w", err)
+	emailStr := req.URL.Query().Get("email")
+	if emailStr != "" {
+		user, err := c.logic.GetUserByEmail(context.TODO(), emailStr)
+		if err != nil {
+			return fmt.Errorf("getting user: %w", err)
+		}
+		jsonData, err := json.Marshal(user)
+		if err != nil {
+			return fmt.Errorf("marshaling json: %w", err)
+		}
+		w.Write(jsonData)
+		return nil
 	}
-	jsonData, err := json.Marshal(user)
-	if err != nil {
-		return fmt.Errorf("marshaling json: %w", err)
-	}
-	w.Write(jsonData)
+	return fmt.Errorf("no id or email param")
 	return nil
 }
 

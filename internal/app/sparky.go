@@ -33,6 +33,7 @@ func Run(configPath string) error {
 	router.POST("/signin", c.Login)
 	router.POST("/update", c.UpdateUser)
 	router.GET("/user/:id", c.GetUserByID)
+	router.GET("/email/:id", c.GetUserByEmail)
 	router.GET("/static/:filename", c.GetFile)
 	router.POST("/reaction", c.SetReaction)
 	router.POST("/connection", c.ClientConnection)

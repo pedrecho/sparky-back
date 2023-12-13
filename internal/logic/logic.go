@@ -104,6 +104,15 @@ func (l *Logic) GetUserByID(ctx context.Context, id int64) (*models.User, error)
 	return &user, nil
 }
 
+func (l *Logic) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	var user models.User
+	err := l.db.NewSelect().Model(&user).Where("email = ?", email).Scan(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("select query: %w", err)
+	}
+	return &user, nil
+}
+
 func (l *Logic) GetFile(filename string) ([]byte, error) {
 	file, err := os.Open(staticPath + filename)
 	if err != nil {

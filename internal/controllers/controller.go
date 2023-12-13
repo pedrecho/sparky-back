@@ -120,6 +120,23 @@ func (c *Controller) GetUserByID(w http.ResponseWriter, req bunrouter.Request) e
 	return nil
 }
 
+func (c *Controller) GetUserByEmail(w http.ResponseWriter, req bunrouter.Request) error {
+	emailStr, ok := req.Params().Get("email")
+	if !ok {
+		return fmt.Errorf("no id param")
+	}
+	user, err := c.logic.GetUserByEmail(context.TODO(), emailStr)
+	if err != nil {
+		return fmt.Errorf("getting user: %w", err)
+	}
+	jsonData, err := json.Marshal(user)
+	if err != nil {
+		return fmt.Errorf("marshaling json: %w", err)
+	}
+	w.Write(jsonData)
+	return nil
+}
+
 func (c *Controller) GetFile(w http.ResponseWriter, req bunrouter.Request) error {
 	filename, ok := req.Params().Get("filename")
 	if !ok {

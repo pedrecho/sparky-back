@@ -12,6 +12,7 @@ import (
 	"os"
 	"slices"
 	"sparky-back/internal/models"
+	"sync"
 	"time"
 )
 
@@ -25,6 +26,7 @@ const (
 type Logic struct {
 	db       *bun.DB
 	dbCh     chan models.Message
+	mu       sync.Mutex
 	clientCh map[int64]chan models.Message
 }
 
@@ -213,7 +215,9 @@ func (l *Logic) GetNewMessages(ctx context.Context, msg *models.Message) ([]mode
 }
 
 func (l *Logic) SendMessages(ctx context.Context, send func([]byte), msg *models.Message) error {
+	l.mu.Lock()
 	l.clientCh[msg.UserID] = make(chan models.Message, clientBufSize)
+	l.mu.Unlock()
 	messages, err := l.GetNewMessages(context.TODO(), msg)
 	if err != nil {
 		return fmt.Errorf("getting new messages: %w", err)
@@ -236,7 +240,9 @@ func (l *Logic) SendMessages(ctx context.Context, send func([]byte), msg *models
 			}
 			send(jsonData)
 		case <-ctx.Done():
+			l.mu.Lock()
 			delete(l.clientCh, msg.UserID)
+			l.mu.Unlock()
 			return nil
 		}
 	}
